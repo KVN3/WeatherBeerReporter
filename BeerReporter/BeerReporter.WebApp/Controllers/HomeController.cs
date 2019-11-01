@@ -70,40 +70,40 @@ namespace BeerReporter.WebApp.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Index(string location)
-        {
-            // No location passed
-            if (string.IsNullOrEmpty(location))
-            {
-                ViewBag.Message = $"Empty location input... please input valid location.";
-                return View();
-            }
+        //[HttpPost]
+        //public async Task<IActionResult> Index(string location)
+        //{
+        //    // No location passed
+        //    if (string.IsNullOrEmpty(location))
+        //    {
+        //        ViewBag.Message = $"Empty location input... please input valid location.";
+        //        return View();
+        //    }
 
-            // Location not found
-            if (mapServices.SearchAddress(location) == null)
-            {
-                ViewBag.Message = $"Couldn't find address for location: {location}. Please try again with a different location.";
-                return View();
-            }
+        //    // Location not found
+        //    if (mapServices.SearchAddress(location) == null)
+        //    {
+        //        ViewBag.Message = $"Couldn't find address for location: {location}. Please try again with a different location.";
+        //        return View();
+        //    }
 
-            // Prepare the queue command
-            var queueCommand = new GenerateBeerReportCommand()
-            {
-                BlobName = location + _cloudBlobService.GetRandomBlobName(location + ".png"),
-                Location = location
-            };
+        //    // Prepare the queue command
+        //    var queueCommand = new GenerateBeerReportCommand()
+        //    {
+        //        BlobName = location + _cloudBlobService.GetRandomBlobName(location + ".png"),
+        //        Location = location
+        //    };
 
-            // Get and save the sas uri so we can access the blob once it's done
-            string sasUri = await _cloudBlobService.GetBlobSasUri(queueCommand.BlobName);
-            HttpContext.Session.SetString("sas_uri", sasUri);
+        //    // Get and save the sas uri so we can access the blob once it's done
+        //    string sasUri = await _cloudBlobService.GetBlobSasUri(queueCommand.BlobName);
+        //    HttpContext.Session.SetString("sas_uri", sasUri);
 
-            // Send to the queue
-            await _queueCommunicator.SendAsync(queueCommand);
+        //    // Send to the queue
+        //    await _queueCommunicator.SendAsync(queueCommand);
 
-            ViewBag.Message = $"Thank you. Request for beer report in {location} will be added to queue.";
-            return View();
-        }
+        //    ViewBag.Message = $"Thank you. Request for beer report in {location} will be added to queue.";
+        //    return View();
+        //}
 
 
         [HttpPost]
@@ -149,6 +149,7 @@ namespace BeerReporter.WebApp.Controllers
         {
             model.RemoveNulls();
 
+            // Set values based on if the blob is ready or not.
             if (await _cloudBlobService.IsBlobReady(HttpContext.Session.GetString("blob_name")))
             {
                 model.SasUri = HttpContext.Session.GetString("sas_uri");

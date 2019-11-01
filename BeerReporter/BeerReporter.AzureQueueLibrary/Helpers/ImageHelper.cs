@@ -23,42 +23,41 @@ namespace BeerReporter.AzureLibrary.Converter
 
     public class ImageHelper : IImageHelper
     {
+        /// <summary>
+        /// Writes text on an image.
+        /// </summary>
+        /// <param name="imageStream">The image.</param>
+        /// <param name="fontSize">Font size to display.</param>
+        /// <param name="texts">Texts to write on the image, including x,y pixel positions.</param>
+        /// <returns>Updated image.</returns>
         public Stream AddTextToImage(Stream imageStream, int fontSize, params (string text, (float x, float y) position)[] texts)
         {
-            //Stream imageStreamCopy = new MemoryStream();
-            //imageStream.CopyTo(imageStreamCopy);
+            // High fontsize can cause errors
+            if (fontSize > 20)
+                fontSize = 20;
 
             var memoryStream = new MemoryStream();
-            bool hasFailed = false;
 
-            try
-            {
-                var image = Image.Load(imageStream);
+            var image = Image.Load(imageStream);
 
-                image
-                    .Clone(img =>
+            image
+                .Clone(img =>
+                {
+                    foreach (var (text, (x, y)) in texts)
                     {
-                        foreach (var (text, (x, y)) in texts)
-                        {
-                            img.DrawText(text, SystemFonts.CreateFont("Verdana", fontSize), Rgba32.OrangeRed, new PointF(x, y));
-                        }
-                    })
-                    .SaveAsPng(memoryStream);
+                        img.DrawText(text, SystemFonts.CreateFont("Verdana", fontSize), Rgba32.OrangeRed, new PointF(x, y));
+                    }
+                })
+                .SaveAsPng(memoryStream);
 
-                memoryStream.Position = 0;
-            }
-            catch (Exception ex)
-            {
-                hasFailed = true;
-            }
+            memoryStream.Position = 0;
 
-            // Try to write with a smaller fontSize, as long as it's above 12px
-            //if (hasFailed && fontSize > 12)
-            //    return AddTextToImage((Stream)imageStreamCopy, fontSize / 2, texts);
-            //else
             return memoryStream;
         }
 
+        /// <summary>
+        /// Converts a stream to an array of bytes.
+        /// </summary>
         public byte[] ToByteArray(Stream stream)
         {
             using (MemoryStream memoryStream = new MemoryStream())
@@ -68,6 +67,9 @@ namespace BeerReporter.AzureLibrary.Converter
             }
         }
 
+        /// <summary>
+        /// Converts an array of bytes to a stream.
+        /// </summary>
         public Stream ToStream(byte[] bytes)
         {
             Stream stream = new MemoryStream(bytes);

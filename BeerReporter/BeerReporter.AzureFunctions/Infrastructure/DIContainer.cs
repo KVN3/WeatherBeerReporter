@@ -35,13 +35,11 @@ namespace BeerReporter.AzureFunctions.Infrastructure
                 .AddEnvironmentVariables()
                 .Build();
 
-            // Here we will add the different services, such as API's, queue / blob library, etc.
-            // API 1
-            // API 2
             services.AddSingleton<IGenerateBeerReportCommandHandler, GenerateBeerReportCommandHandler>();
+
+            // Adds the needed services
             services.AddAzureLibrary(configuration["AzureWebJobsStorage"], 
                 configuration["AzureMapsKey"], configuration["OpenWeatherKey"]);
-            // Blob library
 
             return services.BuildServiceProvider();
         }

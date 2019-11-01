@@ -23,7 +23,7 @@ namespace BeerReporter.AzureFunctions.Report
 
     public class GenerateBeerReportCommandHandler : IGenerateBeerReportCommandHandler
     {
-        private readonly float _optimalDrinkingTemperature = 25;
+        private readonly float _minDrinkingTemperature = 18;
         private readonly int _mapZoom = 10;
 
         private readonly ICloudQueueService _queueCommunicator;
@@ -100,6 +100,9 @@ namespace BeerReporter.AzureFunctions.Report
             return _imageHelper.ToByteArray(stream);
         }
 
+        /// <summary>
+        /// Creates a suggestion message whether to drink beer there.
+        /// </summary>
         private string CreateSuggestion(float tempInCelsius)
         {
             if (IsWeatherSufficientForBeer(tempInCelsius))
@@ -108,9 +111,12 @@ namespace BeerReporter.AzureFunctions.Report
                 return "You shouldn't drink beer here!";
         }
 
+        /// <summary>
+        /// Checks if the temperature is sufficient for drinking beer.
+        /// </summary>
         private bool IsWeatherSufficientForBeer(float tempInCelsius)
         {
-            if (tempInCelsius >= _optimalDrinkingTemperature)
+            if (tempInCelsius >= _minDrinkingTemperature)
                 return true;
             else
                 return false;

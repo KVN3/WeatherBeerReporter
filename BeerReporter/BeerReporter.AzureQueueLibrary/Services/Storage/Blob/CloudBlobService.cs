@@ -11,12 +11,7 @@ namespace BeerReporter.AzureLibrary.Services.Storage.Blob
     public interface ICloudBlobService
     {
         string PolicyName { get; set; }
-
-        Task<IEnumerable<Uri>> ListAsync();
         Task<CloudBlockBlob> UploadAsync(ImageFile imageFile);
-        Task DeleteAsync(string fileUri);
-        Task DeleteAllAsync();
-
         Task<string> GetBlobSasUri(string fileName);
         Task<bool> IsBlobReady(string sasUri);
 
@@ -31,70 +26,6 @@ namespace BeerReporter.AzureLibrary.Services.Storage.Blob
         public CloudBlobService(ICloudBlobFactory cloudBlobFactory)
         {
             this._cloudBlobFactory = cloudBlobFactory;
-        }
-
-        public async Task DeleteAllAsync()
-        {
-            var blobContainer = await _cloudBlobFactory.GetBlobContainer();
-
-            BlobContinuationToken blobContinuationToken = null;
-            do
-            {
-                var response = await blobContainer.ListBlobsSegmentedAsync(blobContinuationToken);
-                foreach (IListBlobItem blob in response.Results)
-                {
-                    if (blob.GetType() == typeof(CloudBlockBlob))
-                        await ((CloudBlockBlob)blob).DeleteIfExistsAsync();
-                }
-                blobContinuationToken = response.ContinuationToken;
-            } while (blobContinuationToken != null);
-        }
-
-        public async Task DeleteAsync(string fileUri)
-        {
-            var blobContainer = await _cloudBlobFactory.GetBlobContainer();
-
-            Uri uri = new Uri(fileUri);
-            string filename = Path.GetFileName(uri.LocalPath);
-
-            var blob = blobContainer.GetBlockBlobReference(filename);
-            await blob.DeleteIfExistsAsync();
-        }
-
-        public async Task<IEnumerable<Uri>> ListAsync()
-        {
-            var blobContainer = await _cloudBlobFactory.GetBlobContainer();
-            var allBlobs = new List<Uri>();
-            BlobContinuationToken blobContinuationToken = null;
-            do
-            {
-                var response = await blobContainer.ListBlobsSegmentedAsync(blobContinuationToken);
-                foreach (IListBlobItem blob in response.Results)
-                {
-                    if (blob.GetType() == typeof(CloudBlockBlob))
-                        allBlobs.Add(blob.Uri);
-                }
-                blobContinuationToken = response.ContinuationToken;
-            } while (blobContinuationToken != null);
-            return allBlobs;
-        }
-
-        public async Task<IEnumerable<Uri>> FindAsync()
-        {
-            var blobContainer = await _cloudBlobFactory.GetBlobContainer();
-            var allBlobs = new List<Uri>();
-            BlobContinuationToken blobContinuationToken = null;
-            do
-            {
-                var response = await blobContainer.ListBlobsSegmentedAsync(blobContinuationToken);
-                foreach (IListBlobItem blob in response.Results)
-                {
-                    if (blob.GetType() == typeof(CloudBlockBlob))
-                        allBlobs.Add(blob.Uri);
-                }
-                blobContinuationToken = response.ContinuationToken;
-            } while (blobContinuationToken != null);
-            return allBlobs;
         }
 
         public async Task<CloudBlockBlob> UploadAsync(ImageFile imageFile)

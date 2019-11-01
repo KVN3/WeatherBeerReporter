@@ -28,6 +28,11 @@ namespace BeerReporter.AzureLibrary.Maps
             this.imageHelper = imageHelper;
         }
 
+        /// <summary>
+        /// Searches an address for a given location query.
+        /// </summary>
+        /// <param name="location"> Location query input. </param>
+        /// <returns> The first match. In the case of no matches, null. </returns>
         public SearchAddressResult SearchAddress(string location)
         {
             SearchAddressResult result = null;
@@ -47,6 +52,14 @@ namespace BeerReporter.AzureLibrary.Maps
             return result;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="lon"> Longitude for the center. </param>
+        /// <param name="lat"> Latitude for the center. </param>
+        /// <param name="zoom"> Amount of zoom applied. </param>
+        /// <param name="blobName"> Blobname, which will be passed into the returning struct. </param>
+        /// <returns> ImageFile struct containing the image, the blobname reserved for it and the content type. </returns>
         public ImageFile GetMapImage(double lon, double lat, int zoom, string blobName)
         {
             var am = new AzureMapsToolkit.AzureMapsServices(config.Key);

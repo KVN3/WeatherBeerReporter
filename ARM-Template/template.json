@@ -1,0 +1,83 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "accounts_azure_maps_api_name": {
+      "defaultValue": "azure_maps_api",
+      "type": "String"
+    },
+    "storageAccounts_beerreportsstorage_name": {
+      "defaultValue": "beerreportsstorage",
+      "type": "String"
+    }
+  },
+  "variables": {
+    "baseName": "[uniquestring(resourceGroup().id, deployment().name)]",
+    "apiName": "[concat(variables('baseName'), '-api')]",
+    "storageAccountName": "[concat(variables('baseName'), '-storage')]",
+    "azureMapsName": "[concat(variables('baseName'), '-azuremaps')]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Maps/accounts",
+      "apiVersion": "2018-05-01",
+      "name": "[variables('azureMapsName')]",
+      "location": "global",
+      "sku": {
+        "name": "S1",
+        "tier": "Standard"
+      },
+      "properties": {
+        "x-ms-client-id": "df01e02e-7fdf-4666-80bc-f4d861f6dd57"
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2019-04-01",
+      "name": "[variables('storageAccountName')]",
+      "location": "westeurope",
+      "sku": {
+        "name": "Standard_RAGRS",
+        "tier": "Standard"
+      },
+      "kind": "StorageV2",
+      "properties": {
+        "networkAcls": {
+          "bypass": "AzureServices",
+          "virtualNetworkRules": [],
+          "ipRules": [],
+          "defaultAction": "Allow"
+        },
+        "supportsHttpsTrafficOnly": true,
+        "encryption": {
+          "services": {
+            "file": {
+              "enabled": true
+            },
+            "blob": {
+              "enabled": true
+            }
+          },
+          "keySource": "Microsoft.Storage"
+        },
+        "accessTier": "Hot"
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/blobServices",
+      "apiVersion": "2019-04-01",
+      "name": "[variables('storageAccountName', '/default')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_beerreportsstorage_name'))]"
+      ],
+      "properties": {
+        "cors": {
+          "corsRules": []
+        },
+        "deleteRetentionPolicy": {
+          "enabled": false
+        }
+      }
+    }
+  ]
+}

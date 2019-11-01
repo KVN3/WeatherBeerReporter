@@ -30,6 +30,9 @@ namespace BeerReporter.AzureLibrary.Services.OpenWeatherMap
             _httpClient.BaseAddress = new Uri(config.BaseUrl);
         }
 
+        /// <summary>
+        /// Fetches a weather report from the API for the given coordinates.
+        /// </summary>
         public async Task<WeatherReport> GetWeatherReport(double latitude, double longitude)
         {
             var responseString = await _httpClient.GetStringAsync(
